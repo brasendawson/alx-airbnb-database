@@ -144,3 +144,84 @@ The file `subqueries.sql` contains two queries:
 3.  Open your database management tool (e.g., `psql`, `mysql` CLI, DBeaver).
 4.  Copy and execute the queries from `subqueries.sql`.
 5.  Observe the results and try to understand the execution flow of each query type.
+
+
+# SQL Aggregations and Window Functions
+
+This repository contains SQL queries that demonstrate the use of aggregation with `GROUP BY` and powerful window functions like `RANK()` and `ROW_NUMBER()`.
+
+## Database Schema Overview
+
+The queries are written for a schema with the following tables and key columns:
+
+### `users`
+- `user_id` (PRIMARY KEY)
+- `name`
+- `email`
+
+### `bookings`
+- `booking_id` (PRIMARY KEY)
+- `guest_id` (FOREIGN KEY to `users.user_id`)
+- `property_id` (FOREIGN KEY to `properties.property_id`)
+
+### `properties`
+- `property_id` (PRIMARY KEY)
+- `title`
+- `price_per_night`
+
+## Queries
+
+The file `aggregations_and_window_functions.sql` contains three queries:
+
+### 1. Aggregation with GROUP BY
+
+**Objective:** Find the total number of bookings made by each user.
+
+**Explanation:**
+- The `LEFT JOIN` ensures we include users who have made zero bookings.
+- The `GROUP BY` clause collapses all rows into one group per user.
+- The `COUNT(b.booking_id)` function counts the number of bookings within each user's group. It's important to count on the joined table's primary key to avoid counting NULLs from the join as zeros.
+- This is a classic aggregation that reduces many rows of booking data into a single summary row per user.
+
+**Use Case:** Generating reports on user activity, finding top customers, or analyzing booking trends.
+
+### 2. Window Function (RANK)
+
+**Objective:** Rank properties based on their total number of bookings.
+
+**Explanation:**
+- Like the first query, we use a `LEFT JOIN` and `GROUP BY` to calculate `total_bookings` for each property.
+- The key difference is the `RANK() OVER (ORDER BY COUNT(b.booking_id) DESC)` clause.
+  - `RANK()` is the window function.
+  - The `OVER` clause defines the "window" of data the function operates on—in this case, the entire result set.
+  - The `ORDER BY` inside the `OVER` clause tells the function how to assign ranks. Here, properties are ranked descending by their booking count.
+- Unlike `GROUP BY`, which collapses rows, window functions perform calculations across rows while **preserving the original detail of each row**. Each property row is retained, and a new column (`booking_rank`) is added with its calculated rank.
+
+**Use Case:** Creating leaderboards, identifying most popular items, or performing competitive analysis without losing detailed information.
+
+### 3. Bonus: ROW_NUMBER with Partitioning
+
+**Objective:** Demonstrate partitioning by ranking properties within defined price categories.
+
+**Explanation:**
+- This query uses a Common Table Expression (CTE) for clarity to first create a derived table (`property_data`) with a `price_category` column.
+- The window function is `ROW_NUMBER() OVER (PARTITION BY price_category ORDER BY total_bookings DESC)`.
+  - `PARTITION BY price_category` splits the result set into separate groups (partitions) based on the value of `price_category` ('Budget', 'Mid-Range', 'Luxury').
+  - The `ROW_NUMBER()` function then assigns a unique sequential integer (1, 2, 3...) to each row **within its partition**, based on the `ORDER BY` clause.
+  - The ranking restarts at 1 for each new partition.
+- This shows the power of window functions to perform complex, grouped rankings in a single query.
+
+**Use Case:** Analyzing top performers within different segments or categories (e.g., "Top 5 most booked Budget properties").
+
+## Key Concepts
+
+- **Aggregation with GROUP BY:** Summarizes data, reducing the number of rows returned. Best for getting summary statistics (counts, sums, averages) for groups.
+- **Window Functions:** Perform calculations across a set of table rows that are somehow related to the current row. They do not cause rows to become grouped into a single output row—they add a new column to each row. Essential for rankings, running totals, and moving averages.
+
+## How to Run
+
+1.  Ensure you have a SQL database server running (e.g., PostgreSQL, MySQL 8.0+, SQL Server).
+2.  Set up the necessary tables (`users`, `bookings`, `properties`) and populate them with sample data.
+3.  Open your database management tool (e.g., `psql`, `mysql` CLI, DBeaver).
+4.  Copy and execute the queries from `aggregations_and_window_functions.sql`.
+5.  Compare the result sets of the aggregation query and the window function query to understand the difference in output structure.
