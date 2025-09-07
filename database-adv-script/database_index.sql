@@ -1,3 +1,14 @@
+-- Performance Measurement: Before Index Creation
+-- (Run this before creating indexes)
+EXPLAIN ANALYZE
+SELECT * 
+FROM bookings 
+WHERE property_id = 123 
+AND (
+	(check_in_date <= '2024-01-10' AND check_out_date > '2024-01-05') 
+	OR (check_in_date >= '2024-01-05' AND check_in_date < '2024-01-10')
+);
+
 -- Users table indexes
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_role ON users(role);
@@ -17,3 +28,14 @@ CREATE INDEX idx_bookings_status ON bookings(status);
 -- Reviews table indexes
 CREATE INDEX idx_reviews_property_id ON reviews(property_id);
 CREATE INDEX idx_reviews_property_rating ON reviews(property_id, rating);
+
+-- Performance Measurement: After Index Creation
+-- (Run this after creating indexes)
+EXPLAIN ANALYZE
+SELECT * 
+FROM bookings 
+WHERE property_id = 123 
+AND (
+	(check_in_date <= '2024-01-10' AND check_out_date > '2024-01-05') 
+	OR (check_in_date >= '2024-01-05' AND check_in_date < '2024-01-10')
+);
