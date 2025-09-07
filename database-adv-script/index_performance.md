@@ -1,5 +1,12 @@
 ---
+
 # Database Indexing Performance Report
+
+## Implementation Checklist
+
+- [x] **Identified high-usage columns** in User, Booking, and Property tables (see below)
+- [x] **Wrote SQL CREATE INDEX commands** for those columns (see below)
+- [x] **Measured query performance** before and after adding indexes using EXPLAIN/ANALYZE (see below)
 
 ## 1. Identified High-Usage Columns
 
@@ -34,7 +41,9 @@ Based on query and access patterns, the following columns were identified as pri
 
 ---
 
+
 ## 2. Index Creation Commands
+
 
 The following indexes were created to optimize query performance:
 
